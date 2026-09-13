@@ -1,0 +1,2028 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="description" content="Quickdraw - a reaction duel where the skill is in not firing. White lamp, draw. Red lamp, hold. A dashed ring is a lie.">
+<meta name="theme-color" content="#ffe0a8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23ffe0a8'/%3E%3Ccircle cx='16' cy='15' r='10' fill='%232b1c12'/%3E%3Ccircle cx='16' cy='15' r='7.6' fill='%23fff'/%3E%3Cpath d='M16 8.4l1.7 4.3 4.3 1.7-4.3 1.7L16 20.4l-1.7-4.3-4.3-1.7 4.3-1.7z' fill='%232b1c12'/%3E%3C/svg%3E">
+<style>*{box-sizing:border-box}html,body{margin:0;padding:0;height:100%;background:#ffe0a8}
+img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Quickdraw</title>
+<style>
+  :root{ color-scheme: light; }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; background:#ffe0a8; color:#3a2416; overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  #app{
+    position:fixed; inset:0; overflow:hidden; background:#ffe0a8;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  #c{ display:block; position:absolute; inset:0; }
+
+  #sysbar{ position:absolute; top:14px; right:14px; z-index:6; display:flex; gap:9px; }
+  .sysbtn{
+    width:42px; height:42px; border-radius:13px; border:1px solid rgba(110,60,24,.26);
+    background:rgba(255,246,226,.72); color:#8a4a1c; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    transition:transform .12s ease, background .12s ease;
+  }
+  .sysbtn:hover{ background:#fff6e2; }
+  .sysbtn:active{ transform:scale(.92); }
+  .sysbtn svg{ width:20px; height:20px; display:block; }
+
+  .overlay{
+    position:absolute; inset:0; z-index:5; padding:24px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:15px;
+    text-align:center;
+    background:radial-gradient(120% 92% at 50% 42%, rgba(255,244,216,.84) 0%, rgba(244,198,132,.96) 74%);
+    color:#3a2416;
+  }
+  .logo{
+    font-size:clamp(38px,11.2vmin,74px); font-weight:900; letter-spacing:-.015em; line-height:.9;
+    margin:0; text-transform:uppercase; color:#c9452c;
+    text-shadow:0 3px 0 #f7b48b, 0 9px 24px rgba(150,60,24,.3);
+  }
+  .tagline{
+    margin:0; font-size:clamp(11px,2.8vmin,13px); letter-spacing:.3em; text-transform:uppercase;
+    color:#a4651f; font-weight:800;
+  }
+  .btn{
+    appearance:none; -webkit-appearance:none; border:0; cursor:pointer; font-family:inherit;
+    font-size:clamp(15px,3.6vmin,18px); font-weight:900; letter-spacing:.15em; text-transform:uppercase;
+    padding:17px 42px; border-radius:16px; color:#48230c; margin-top:4px;
+    background:linear-gradient(180deg,#ffc178 0%,#f5892f 100%);
+    box-shadow:0 5px 0 #bc5a17, 0 12px 26px rgba(150,70,20,.32);
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .btn:hover{ background:linear-gradient(180deg,#ffd096 0%,#ff9a45 100%); }
+  .btn:active{ transform:translateY(4px); box-shadow:0 1px 0 #bc5a17, 0 6px 14px rgba(150,70,20,.3); }
+  .btn.ghost{
+    background:transparent; color:#8a4a1c; padding:12px 26px; font-size:13px; letter-spacing:.18em;
+    box-shadow:0 0 0 1px rgba(138,74,28,.36) inset;
+  }
+  .btn.ghost:hover{ background:rgba(255,255,255,.42); }
+  .btn.ghost:active{ transform:translateY(2px); box-shadow:0 0 0 1px rgba(138,74,28,.36) inset; }
+  .hint{
+    margin:6px 0 0; font-size:clamp(11px,2.7vmin,13px); line-height:1.75; color:#87602f;
+    letter-spacing:.04em; max-width:35ch;
+  }
+  .hint b{ color:#3a2416; font-weight:800; }
+
+  .scorecard{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+  .stat{
+    min-width:126px; padding:14px 20px; border-radius:18px;
+    background:rgba(255,250,238,.78); border:1px solid rgba(138,74,28,.22);
+  }
+  .stat .k{ font-size:10px; letter-spacing:.26em; text-transform:uppercase; color:#a4855a; font-weight:800; }
+  .stat .v{ font-size:clamp(28px,7.4vmin,40px); font-weight:900; color:#3a2416; line-height:1.15; }
+  .stat.best .v{ color:#c9452c; }
+  .headline{
+    margin:0; font-size:clamp(26px,7.6vmin,44px); font-weight:900; letter-spacing:.02em; text-transform:uppercase;
+    color:#a5391f; text-shadow:0 3px 0 #f2b690;
+  }
+  .record{ margin:0; font-size:12px; font-weight:900; letter-spacing:.28em; text-transform:uppercase; color:#c9452c; }
+  .runstats{
+    margin:0; font-size:12px; letter-spacing:.12em; color:#87602f; text-transform:uppercase;
+    font-weight:800; line-height:1.9; max-width:32ch; text-wrap:balance;
+  }
+
+  :focus-visible{ outline:3px solid #f5892f; outline-offset:3px; }
+
+  .tiers{ display:flex; gap:8px; justify-content:center; margin:2px 0 0; width:100%; max-width:430px; }
+  .tier{
+    appearance:none; -webkit-appearance:none; cursor:pointer; font-family:inherit;
+    border:1px solid rgba(138,74,28,.26); background:rgba(255,250,238,.6); color:#87602f;
+    padding:11px 9px; border-radius:14px; flex:1 1 0; min-width:0;
+    display:flex; flex-direction:column; gap:4px; align-items:center; justify-content:center;
+    transition:border-color .14s ease, background .14s ease, transform .12s ease, color .14s ease;
+  }
+  .tier:hover{ background:#fffaee; }
+  .tier:active{ transform:scale(.97); }
+  .tier .tn{ font-size:12px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+  .tier .tb{ font-size:10px; letter-spacing:.02em; line-height:1.3; color:#a4855a; }
+  .tier[aria-checked="true"]{
+    border-color:#e0651f; background:#ffe9cd; color:#a5391f;
+    box-shadow:0 0 0 2px rgba(245,137,47,.32);
+  }
+  .tier[aria-checked="true"] .tb{ color:#bc5a17; }
+
+  .suggest{
+    display:flex; flex-direction:column; gap:9px; align-items:center; margin:0;
+    padding:13px 18px; border-radius:16px;
+    background:rgba(255,235,198,.85); border:1px solid rgba(201,69,44,.4);
+  }
+  .suggest .msg{ margin:0; font-size:12px; letter-spacing:.05em; color:#a5391f; font-weight:800; max-width:31ch; }
+  .suggest .btn.ghost{ margin:0; color:#a5391f; box-shadow:0 0 0 1px rgba(201,69,44,.5) inset; }
+
+  .legend{
+    display:flex; gap:16px; justify-content:center; align-items:center; margin:2px 0 0; flex-wrap:wrap;
+  }
+  .lg{ display:flex; align-items:center; gap:7px; font-size:11px; font-weight:800; letter-spacing:.12em;
+       text-transform:uppercase; color:#87602f; }
+  .lg i{ width:17px; height:17px; border-radius:50%; display:block; }
+  .lg i.draw{ background:#fff; box-shadow:0 0 0 2px #3a2416, 0 0 12px rgba(255,255,255,.9); }
+  .lg i.hold{ background:#e03a2c; box-shadow:0 0 0 2px #3a2416; }
+  .lg i.wait{ background:#f0a92e; box-shadow:0 0 0 2px rgba(58,36,22,.4); border:2px dashed #fff6e2; }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="c"></canvas>
+
+  <div id="sysbar">
+    <button class="sysbtn" id="btnSound" type="button" aria-label="Toggle sound"></button>
+    <button class="sysbtn" id="btnPause" type="button" aria-label="Pause"></button>
+  </div>
+
+  <div class="overlay" id="ovMenu">
+    <h1 class="logo">Quick<br>draw</h1>
+    <p class="tagline">Wait for the solid ring</p>
+    <div class="legend">
+      <span class="lg"><i class="draw"></i>White · draw</span>
+      <span class="lg"><i class="hold"></i>Red · hold</span>
+      <span class="lg"><i class="wait"></i>Dashed · not yet</span>
+    </div>
+    <div class="tiers" id="tierPick" role="radiogroup" aria-label="Difficulty"></div>
+    <button class="btn" id="btnPlay" type="button">Face Off</button>
+    <p class="hint" id="menuHint"></p>
+  </div>
+
+  <div class="overlay" id="ovOver" hidden>
+    <h2 class="headline" id="overTitle">Out of Plates</h2>
+    <p class="record" id="newRecord" hidden>New Record</p>
+    <div class="scorecard">
+      <div class="stat"><div class="k">Score</div><div class="v" id="finalScore">0</div></div>
+      <div class="stat best"><div class="k" id="bestLabel">Best</div><div class="v" id="bestScore">0</div></div>
+    </div>
+    <p class="runstats" id="runStats"></p>
+    <div class="suggest" id="suggestBox" hidden>
+      <p class="msg" id="suggestMsg"></p>
+      <button class="btn ghost" id="btnSuggest" type="button"></button>
+    </div>
+    <button class="btn" id="btnAgain" type="button">Again</button>
+    <button class="btn ghost" id="btnMenu" type="button">Menu</button>
+  </div>
+
+  <div class="overlay" id="ovPause" hidden>
+    <h2 class="headline">Paused</h2>
+    <p class="hint">The round restarts when you come back — no peeking at a lit lamp.</p>
+    <button class="btn" id="btnResume" type="button">Resume</button>
+    <button class="btn ghost" id="btnQuit" type="button">End Run</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================================
+     1. PLATFORM BRIDGE — YouTube Playables SDK with safe fallbacks.
+     ========================================================================= */
+  var YT = (typeof window !== 'undefined' && window.ytgame) ? window.ytgame : null;
+
+  var Platform = {
+    audioAllowed: true, _firstFrameSent: false, _readySent: false,
+
+    init: function (onPause, onResume, onAudioChange) {
+      if (!YT) return;
+      try { if (YT.system && YT.system.onPause) YT.system.onPause(onPause); } catch (e) {}
+      try { if (YT.system && YT.system.onResume) YT.system.onResume(onResume); } catch (e) {}
+      try {
+        if (YT.system && typeof YT.system.isAudioEnabled === 'function') {
+          this.audioAllowed = !!YT.system.isAudioEnabled();
+        }
+        if (YT.system && YT.system.onAudioEnabledChange) {
+          YT.system.onAudioEnabledChange(function (on) { Platform.audioAllowed = !!on; onAudioChange(); });
+        }
+      } catch (e) {}
+    },
+    firstFrame: function () {
+      if (this._firstFrameSent) return;
+      this._firstFrameSent = true;
+      try { if (YT && YT.game && YT.game.firstFrameReady) YT.game.firstFrameReady(); } catch (e) {}
+    },
+    ready: function () {
+      if (this._readySent) return;
+      this._readySent = true;
+      try { if (YT && YT.game && YT.game.gameReady) YT.game.gameReady(); } catch (e) {}
+    }
+  };
+
+  /* =========================================================================
+     2. STORAGE
+     ========================================================================= */
+  var SAVE_KEY = 'quickdraw.v1';
+
+  var Store = {
+    data: {
+      bests: { cruise: 0, drive: 0, redline: 0 },
+      bestRival: { cruise: 0, drive: 0, redline: 0 },
+      bestMs: { cruise: 0, drive: 0, redline: 0 },
+      tier: 'drive', runs: 0, muted: false,
+      quickDeaths: 0, offeredDown: false, offeredUp: false
+    },
+    best: function (id) { return Store.data.bests[id || Store.data.tier] || 0; },
+    rival: function (id) { return Store.data.bestRival[id || Store.data.tier] || 0; },
+    ms: function (id) { return Store.data.bestMs[id || Store.data.tier] || 0; },
+
+    load: function (done) {
+      var IDS = ['cruise', 'drive', 'redline'];
+      var copyNums = function (src, dst) {
+        if (!src) return;
+        IDS.forEach(function (k) { if (typeof src[k] === 'number') dst[k] = src[k]; });
+      };
+      var finish = function (obj) {
+        if (obj && typeof obj === 'object') {
+          copyNums(obj.bests, Store.data.bests);
+          copyNums(obj.bestRival, Store.data.bestRival);
+          copyNums(obj.bestMs, Store.data.bestMs);
+          if (typeof obj.tier === 'string' && tierById(obj.tier).id === obj.tier) Store.data.tier = obj.tier;
+          if (typeof obj.runs === 'number') Store.data.runs = obj.runs;
+          if (typeof obj.muted === 'boolean') Store.data.muted = obj.muted;
+          if (typeof obj.quickDeaths === 'number') Store.data.quickDeaths = obj.quickDeaths;
+          if (typeof obj.offeredDown === 'boolean') Store.data.offeredDown = obj.offeredDown;
+          if (typeof obj.offeredUp === 'boolean') Store.data.offeredUp = obj.offeredUp;
+        }
+        done();
+      };
+      if (YT && YT.game && YT.game.loadData) {
+        var settled = false;
+        var timer = setTimeout(function () { if (!settled) { settled = true; finish(null); } }, 2500);
+        try {
+          YT.game.loadData().then(function (raw) {
+            if (settled) return; settled = true; clearTimeout(timer);
+            var o = null; try { o = JSON.parse(raw || '{}'); } catch (e) {}
+            finish(o);
+          })['catch'](function () {
+            if (settled) return; settled = true; clearTimeout(timer); finish(null);
+          });
+          return;
+        } catch (e) { if (!settled) { settled = true; clearTimeout(timer); } }
+      }
+      var local = null;
+      try { local = JSON.parse(window.localStorage.getItem(SAVE_KEY) || '{}'); } catch (e) {}
+      finish(local);
+    },
+
+    save: function () {
+      var raw = JSON.stringify(Store.data);
+      if (YT && YT.game && YT.game.saveData) {
+        try { YT.game.saveData(raw)['catch'](function () {}); return; } catch (e) {}
+      }
+      try { window.localStorage.setItem(SAVE_KEY, raw); } catch (e) {}
+    }
+  };
+
+  /* =========================================================================
+     3. AUDIO — procedural. Dry, bright, desert-noon. No files.
+     ========================================================================= */
+  var Sound = {
+    ctx: null, master: null, noiseBuf: null,
+    started: false, muted: false, droneOsc: null, droneGain: null,
+
+    boot: function () {
+      if (this.ctx) return;
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      try { this.ctx = new AC(); } catch (e) { return; }
+      var ctx = this.ctx;
+      this.master = ctx.createGain();
+      this.master.gain.value = 0;
+      this.master.connect(ctx.destination);
+
+      var len = Math.floor(ctx.sampleRate * 1.2);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var ch = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) ch[i] = Math.random() * 2 - 1;
+      this.noiseBuf = buf;
+
+      this.started = true;
+      this.applyVolume();
+    },
+
+    resumeCtx: function () {
+      if (this.ctx && this.ctx.state === 'suspended') { try { this.ctx.resume(); } catch (e) {} }
+    },
+    applyVolume: function () {
+      if (!this.master) return;
+      var on = !this.muted && Platform.audioAllowed;
+      try { this.master.gain.setTargetAtTime(on ? 0.85 : 0.0, this.ctx.currentTime, 0.02); } catch (e) {}
+    },
+    hardStop: function () {
+      if (!this.master) return;
+      try { this.master.gain.setValueAtTime(0, this.ctx.currentTime); } catch (e) {}
+      this.drone(false);
+    },
+
+    blip: function (freq, dur, type, vol, delay) {
+      if (!this.started) return null;
+      var ctx = this.ctx, t = ctx.currentTime + (delay || 0);
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol == null ? 0.2 : vol, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.03);
+      return o;
+    },
+
+    noise: function (dur, f0, f1, vol, type, q) {
+      if (!this.started) return;
+      var ctx = this.ctx, t = ctx.currentTime;
+      var s = ctx.createBufferSource(); s.buffer = this.noiseBuf;
+      var bp = ctx.createBiquadFilter(); bp.type = type || 'bandpass';
+      bp.frequency.setValueAtTime(f0, t);
+      bp.frequency.exponentialRampToValueAtTime(Math.max(40, f1), t + dur);
+      bp.Q.value = q == null ? 1.1 : q;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(bp); bp.connect(g); g.connect(this.master); s.start(t); s.stop(t + dur + 0.03);
+    },
+
+    /* The standoff hum. It is not music — it is tension, and it is the reason
+       the call reads as loud even though it is quiet. Killed the instant a
+       round resolves, so the silence afterwards does the work. */
+    drone: function (on) {
+      if (!this.started) return;
+      var ctx = this.ctx, t = ctx.currentTime;
+      if (on) {
+        if (this.droneOsc) { try { this.droneGain.gain.setTargetAtTime(0.05, t, 0.08); } catch (e) {} return; }
+        var o = ctx.createOscillator(), g = ctx.createGain(), o2 = ctx.createOscillator();
+        o.type = 'sawtooth'; o.frequency.value = 55;
+        o2.type = 'sine'; o2.frequency.value = 82.41;
+        var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 240;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(0.05, t + 0.25);
+        o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(this.master);
+        o.start(t); o2.start(t);
+        this.droneOsc = [o, o2]; this.droneGain = g;
+      } else if (this.droneOsc) {
+        var list = this.droneOsc, gg = this.droneGain;
+        this.droneOsc = null; this.droneGain = null;
+        try {
+          gg.gain.cancelScheduledValues(t);
+          gg.gain.setValueAtTime(Math.max(0.0001, gg.gain.value), t);
+          gg.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+          for (var i = 0; i < list.length; i++) list[i].stop(t + 0.2);
+        } catch (e) {}
+      }
+    },
+
+    ui: function () { this.blip(392, 0.09, 'triangle', 0.12); },
+
+    // Waiting: a dry wooden tick, deliberately unlike anything that means "go".
+    tick: function () { this.noise(0.045, 2600, 900, 0.05, 'bandpass', 3); },
+
+    // A feint: a hard clack. Same family as the tick, louder, no pitch at all.
+    feint: function () {
+      this.noise(0.07, 1700, 500, 0.14, 'bandpass', 2.4);
+      this.blip(196, 0.06, 'square', 0.06);
+    },
+
+    // DRAW. Bright, rising, unmistakable.
+    callDraw: function () {
+      if (!this.started) return;
+      var ctx = this.ctx, t = ctx.currentTime;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(760, t);
+      o.frequency.exponentialRampToValueAtTime(1480, t + 0.07);
+      g.gain.setValueAtTime(0.3, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      o.connect(g); g.connect(this.master); o.start(t); o.stop(t + 0.22);
+      this.blip(1976, 0.1, 'sine', 0.12, 0.01);
+    },
+
+    // HOLD. Low, doubled, falling — the opposite gesture in every dimension.
+    callHold: function () {
+      this.blip(147, 0.22, 'square', 0.16);
+      this.blip(110, 0.3, 'sine', 0.22, 0.07);
+      this.noise(0.2, 300, 90, 0.1, 'lowpass', 0.8);
+    },
+
+    bolt: function (mine) {
+      if (!this.started) return;
+      var ctx = this.ctx, t = ctx.currentTime;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(mine ? 1500 : 900, t);
+      o.frequency.exponentialRampToValueAtTime(mine ? 190 : 120, t + 0.16);
+      g.gain.setValueAtTime(0.24, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+      o.connect(g); g.connect(this.master); o.start(t); o.stop(t + 0.22);
+      this.noise(0.16, 3400, 700, 0.12, 'bandpass', 0.9);
+    },
+
+    held: function () {
+      var N = [523.25, 698.46];
+      for (var i = 0; i < N.length; i++) this.blip(N[i], 0.3, 'sine', 0.16, i * 0.09);
+    },
+
+    falseStart: function () {
+      this.blip(196, 0.3, 'square', 0.16);
+      this.blip(185, 0.34, 'sawtooth', 0.1, 0.02);
+    },
+
+    plateLost: function () {
+      if (!this.started) return;
+      this.blip(330, 0.5, 'square', 0.12);
+      this.blip(123.47, 0.7, 'sine', 0.24, 0.04);
+      this.noise(0.5, 1800, 200, 0.16, 'bandpass', 1.6);
+    },
+
+    plateWon: function () {
+      var N = [392.00, 523.25, 659.25, 880.00];
+      for (var i = 0; i < N.length; i++) this.blip(N[i], 0.38, 'triangle', 0.16, i * 0.065);
+    },
+
+    rivalDown: function () {
+      var N = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      for (var i = 0; i < N.length; i++) this.blip(N[i], 0.44, 'triangle', 0.17, i * 0.075);
+      this.noise(0.4, 900, 2600, 0.08, 'bandpass', 1.4);
+    },
+
+    over: function () {
+      this.drone(false);
+      this.blip(261.63, 0.9, 'sine', 0.22);
+      this.blip(174.61, 1.1, 'sine', 0.2, 0.1);
+      this.blip(130.81, 1.3, 'sine', 0.18, 0.22);
+    }
+  };
+
+  /* =========================================================================
+     4. TUNING
+     ========================================================================= */
+  var LOGICAL_H   = 960;
+  var GROUND_Y    = 742;   // where both duellists stand
+  var LAMP_Y      = 280;   // centre of the signal lamp
+  var LAMP_R      = 64;
+  var GLOW_MUL    = 2.4;
+
+  /* Every one of these is a fixed logical size, never a fraction of the
+     viewport, so a 9:20 phone and a 16:9 desktop play the same game. The pair
+     are 138 units either side of centre because the duellists are 150 wide and
+     the narrowest supported view is about 432 units across — they have to both
+     fit there, and extra width past that only ever buys more desert. */
+  var DUEL_HALF   = 138;
+  var BOT_H       = 156;
+  var BOT_W       = 150;
+  var BOT_SPR_H   = 230;
+
+  var SETTLE_TIME = 0.50;  // input is swallowed here, so the tap that started
+                           // the round cannot leak into it as a false start
+  var HOLD_TIME   = 0.75;  // how long a red call must be respected
+  var RESOLVE_T   = 1.00;
+  var FEINT_MIN   = 0.17, FEINT_MAX = 0.25;
+  var WINS_PER_RIVAL   = 3;
+  var STREAK_FOR_PLATE = 3;
+
+  /* -------------------------------------------------------------------------
+     Difficulty is one measured number: the reaction window, in milliseconds —
+     the time between the lamp settling on WHITE and the rival firing. Median
+     human reaction to a visual cue is around 250 ms, and 320-380 ms is normal
+     for someone not warmed up, so the windows are set around that:
+
+       Cruise   700 -> 470 ms   comfortably above an unpractised reaction
+       Drive    560 -> 360 ms   about a practised one, with margin to spare
+       Redline  460 -> 270 ms   at the edge of what a human can do at all
+
+     The window shrinks across the first eight rivals and then holds at the
+     floor, so the ladder gets harder without ever becoming impossible.
+
+     Nothing about the input changes between tiers. The tap is the same tap.
+     ------------------------------------------------------------------------- */
+  var TIERS = [
+    { id: 'cruise', name: 'Cruise', blurb: 'A long look',
+      winBase: 700, winFloor: 470, ramp: 8,
+      hold: 0.18, feintMul: 0.6,
+      plates: 4, maxPlates: 6,
+      waitMin: 0.85, waitMax: 2.50,
+      scoreMul: 0.7 },
+    { id: 'drive', name: 'Drive', blurb: 'The real thing',
+      winBase: 560, winFloor: 360, ramp: 8,
+      hold: 0.26, feintMul: 1.0,
+      plates: 3, maxPlates: 5,
+      waitMin: 0.70, waitMax: 2.60,
+      scoreMul: 1.0 },
+    { id: 'redline', name: 'Redline', blurb: "Blink and it's gone",
+      winBase: 460, winFloor: 270, ramp: 8,
+      hold: 0.34, feintMul: 1.35,
+      plates: 2, maxPlates: 4,
+      waitMin: 0.60, waitMax: 2.80,
+      scoreMul: 1.45 }
+  ];
+
+  /* The ladder. Each rival has a colour, a bluffing habit and a twitchiness —
+     twitch is pure theatre, feint is the only one that touches the rules. */
+  var RIVALS = [
+    { name: 'Rusty',  col: '#e8703a', dark: '#b04a1d', trim: '#ffd9a8', feint: 0.00, twitch: 0.28 },
+    { name: 'Pip',    col: '#f4b731', dark: '#bd841a', trim: '#fff0c2', feint: 0.14, twitch: 0.52 },
+    { name: 'Mesa',   col: '#2fa7bd', dark: '#1b7186', trim: '#cdf1f8', feint: 0.32, twitch: 0.42 },
+    { name: 'Juno',   col: '#9b5de5', dark: '#6a33ad', trim: '#e6d3ff', feint: 0.45, twitch: 0.60 },
+    { name: 'Cinder', col: '#e23c3c', dark: '#a5211f', trim: '#ffd2cc', feint: 0.55, twitch: 0.72 },
+    { name: 'Vex',    col: '#3f9350', dark: '#256534', trim: '#d4f2d8', feint: 0.62, twitch: 0.55 },
+    { name: 'Halo',   col: '#e8579f', dark: '#ad2a6c', trim: '#ffd8ec', feint: 0.70, twitch: 0.80 },
+    { name: 'Zero',   col: '#4b5a6e', dark: '#2b3745', trim: '#dbe4ef', feint: 0.80, twitch: 0.90 }
+  ];
+  var ROMAN = ['', ' II', ' III', ' IV', ' V', ' VI', ' VII', ' VIII', ' IX'];
+
+  function rivalAt(i) {
+    var base = RIVALS[i % RIVALS.length];
+    var lap = Math.floor(i / RIVALS.length);
+    return {
+      name: base.name + (ROMAN[Math.min(lap, ROMAN.length - 1)] || ''),
+      col: base.col, dark: base.dark, trim: base.trim,
+      feint: Math.min(0.88, base.feint + lap * 0.18),
+      twitch: Math.min(1, base.twitch + lap * 0.05)
+    };
+  }
+
+  /* The reaction window for rival i, in seconds. It falls fast across the first
+     eight rivals and then keeps going, 18 ms at a time, down to a hard floor of
+     0.55 of the tier's stated floor — 258 ms on Cruise, 148 ms on Redline.
+     Those are below human reaction time on purpose. An endless game needs a
+     wall, and the honest place for this one is past the point where a draw can
+     be answered at all: from there the only winnable rounds are the ones you
+     win by not moving.
+
+     The first draft levelled off at the tier floor, and the run-length probe
+     caught it the same way it caught the un-ending pressure ramp in an earlier
+     game in this portfolio — an average player on Cruise reached rival 20, won
+     98% of sixty rounds and was still going. A run that cannot end is not a
+     run. */
+  function windowFor(T, i) {
+    var k = Math.min(1, i / T.ramp);
+    var w = lerp(T.winBase, T.winFloor, k);
+    if (i > T.ramp) w -= (i - T.ramp) * 18;
+    return Math.max(T.winFloor * 0.55, w) / 1000;
+  }
+
+  function tierById(id) {
+    for (var i = 0; i < TIERS.length; i++) if (TIERS[i].id === id) return TIERS[i];
+    return TIERS[1];
+  }
+  function tierIndex(id) {
+    for (var i = 0; i < TIERS.length; i++) if (TIERS[i].id === id) return i;
+    return 1;
+  }
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function rndi(a, b) { return Math.floor(rnd(a, b + 1)); }
+  function fmt(n) { return Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+  function roundRect(c, x, y, w, h, r) {
+    r = Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2);
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  function starPath(c, cx, cy, r, k) {
+    c.beginPath();
+    for (var i = 0; i < 8; i++) {
+      var a = -Math.PI / 2 + i * Math.PI / 4;
+      var rr = (i % 2 === 0) ? r : r * k;
+      var x = cx + Math.cos(a) * rr, y = cy + Math.sin(a) * rr;
+      if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
+    }
+    c.closePath();
+  }
+
+  /* =========================================================================
+     5. VIEW / SPRITE CACHE
+     ========================================================================= */
+  var app = document.getElementById('app');
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d', { alpha: false });
+
+  var view = { w: 540, h: LOGICAL_H, scale: 1, dpr: 1 };
+  var sprites = {};
+  var spriteQ = 2;
+  var bgFull = null;
+
+  function sprite(key, w, h, paint) {
+    var k = key + '|' + Math.round(w) + 'x' + Math.round(h) + '@' + spriteQ;
+    var hit = sprites[k];
+    if (hit) return hit;
+    var cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.ceil(w * spriteQ));
+    cv.height = Math.max(1, Math.ceil(h * spriteQ));
+    var c2 = cv.getContext('2d');
+    c2.setTransform(spriteQ, 0, 0, spriteQ, 0, 0);
+    paint(c2, w, h);
+    hit = { cv: cv, w: w, h: h };
+    sprites[k] = hit;
+    return hit;
+  }
+
+  function blit(s, cx, cy) { ctx.drawImage(s.cv, cx - s.w / 2, cy - s.h / 2, s.w, s.h); }
+
+  function layout() {
+    var cw = Math.max(1, app.clientWidth || window.innerWidth);
+    var chh = Math.max(1, app.clientHeight || window.innerHeight);
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    // Past this many device pixels, drop resolution rather than frames.
+    var budget = 2.6e6;
+    var pxCount = cw * chh * dpr * dpr;
+    if (pxCount > budget) dpr = Math.max(1, dpr * Math.sqrt(budget / pxCount));
+
+    canvas.width = Math.round(cw * dpr);
+    canvas.height = Math.round(chh * dpr);
+    canvas.style.width = cw + 'px';
+    canvas.style.height = chh + 'px';
+
+    view.dpr = dpr;
+    view.scale = chh / LOGICAL_H;
+    view.h = LOGICAL_H;
+    view.w = cw / view.scale;
+
+    ctx.setTransform(dpr * view.scale, 0, 0, dpr * view.scale, 0, 0);
+    spriteQ = clamp(view.scale * view.dpr, 1, 2.5);
+    sprites = {};
+    bgFull = null;
+  }
+
+  function cx() { return view.w / 2; }
+
+  /* -------------------------------------------------------------------------
+     The desert never moves, so it is painted once per layout at real canvas
+     resolution and blitted 1:1. Stretching a small texture across the screen
+     every frame costs per destination pixel, and that alone was the 30-vs-60
+     fps gap in an earlier game in this portfolio.
+     ------------------------------------------------------------------------- */
+  function bgRand(seed) {
+    var s = seed >>> 0;
+    return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  }
+
+  function backgroundFull() {
+    if (bgFull && bgFull.width === canvas.width && bgFull.height === canvas.height) return bgFull;
+    var cv = document.createElement('canvas');
+    cv.width = Math.max(1, canvas.width);
+    cv.height = Math.max(1, canvas.height);
+    var c = cv.getContext('2d');
+    c.setTransform(view.dpr * view.scale, 0, 0, view.dpr * view.scale, 0, 0);
+
+    var W = view.w, H = view.h, HZ = GROUND_Y - 46;
+
+    var sky = c.createLinearGradient(0, 0, 0, HZ);
+    sky.addColorStop(0, '#5cc3e6');
+    sky.addColorStop(0.52, '#9adcef');
+    sky.addColorStop(1, '#ffe7b4');
+    c.fillStyle = sky;
+    c.fillRect(0, 0, W, HZ);
+
+    // High noon: the sun is straight up and small, not a sunset disc.
+    var sunX = W * 0.5, sunY = 96;
+    var halo = c.createRadialGradient(sunX, sunY, 4, sunX, sunY, 190);
+    halo.addColorStop(0, 'rgba(255,255,240,.95)');
+    halo.addColorStop(0.18, 'rgba(255,246,200,.55)');
+    halo.addColorStop(1, 'rgba(255,240,190,0)');
+    c.fillStyle = halo;
+    c.fillRect(sunX - 200, sunY - 200, 400, 400);
+
+    // Far mesas, two layers, deterministic per width.
+    var R = bgRand(20260912);
+    function mesas(baseY, h0, col, n) {
+      c.fillStyle = col;
+      var x = -120;
+      for (var i = 0; i < n; i++) {
+        var w = 110 + R() * 230;
+        var h = h0 * (0.55 + R() * 0.9);
+        var top = baseY - h;
+        var inset = w * 0.16;
+        c.beginPath();
+        c.moveTo(x, baseY);
+        c.lineTo(x + inset, top);
+        c.lineTo(x + w - inset, top);
+        c.lineTo(x + w, baseY);
+        c.closePath();
+        c.fill();
+        x += w * (0.62 + R() * 0.4);
+        if (x > W + 140) break;
+      }
+    }
+    mesas(HZ + 4, 162, '#b487ad', 14);
+    mesas(HZ + 4, 112, '#cf7f64', 16);
+    mesas(HZ + 4, 58, '#d99a6a', 20);
+
+    // Ground.
+    var sand = c.createLinearGradient(0, HZ - 8, 0, H);
+    sand.addColorStop(0, '#f6cf88');
+    sand.addColorStop(0.42, '#eeb964');
+    sand.addColorStop(1, '#dc9b47');
+    c.fillStyle = sand;
+    c.fillRect(0, HZ - 8, W, H - HZ + 8);
+
+    // Heat shimmer bands — flat stripes, cheap, and they read as distance.
+    c.fillStyle = 'rgba(255,255,255,.13)';
+    for (var b = 0; b < 7; b++) {
+      var y = HZ + 6 + b * 13 + R() * 5;
+      c.fillRect(0, y, W, 2.5 - b * 0.22);
+    }
+
+    // The duelling strip: a packed-earth road the two of them stand on.
+    var strip = c.createLinearGradient(0, GROUND_Y - 30, 0, H);
+    strip.addColorStop(0, 'rgba(190,124,58,.0)');
+    strip.addColorStop(0.35, 'rgba(190,124,58,.34)');
+    strip.addColorStop(1, 'rgba(160,98,44,.42)');
+    c.fillStyle = strip;
+    c.fillRect(0, GROUND_Y - 30, W, H - GROUND_Y + 30);
+
+    c.strokeStyle = 'rgba(126,76,34,.22)';
+    c.lineWidth = 3;
+    c.beginPath(); c.moveTo(0, GROUND_Y + 2); c.lineTo(W, GROUND_Y + 2); c.stroke();
+
+    // Cacti and fence posts, kept clear of the duelling strip.
+    function cactus(x, y, s, col, deep) {
+      c.fillStyle = deep;
+      roundRect(c, x - 13 * s, y - 108 * s, 26 * s, 110 * s, 13 * s); c.fill();
+      roundRect(c, x - 40 * s, y - 84 * s, 20 * s, 52 * s, 10 * s); c.fill();
+      roundRect(c, x - 40 * s, y - 44 * s, 50 * s, 18 * s, 9 * s); c.fill();
+      roundRect(c, x + 21 * s, y - 96 * s, 19 * s, 44 * s, 9 * s); c.fill();
+      roundRect(c, x - 4 * s, y - 62 * s, 44 * s, 17 * s, 8 * s); c.fill();
+      c.fillStyle = col;
+      roundRect(c, x - 13 * s, y - 108 * s, 17 * s, 110 * s, 8 * s); c.fill();
+      roundRect(c, x - 40 * s, y - 84 * s, 12 * s, 48 * s, 6 * s); c.fill();
+      roundRect(c, x + 21 * s, y - 96 * s, 12 * s, 40 * s, 6 * s); c.fill();
+    }
+    var safe = DUEL_HALF + 130;
+    for (var i = 0; i < 26; i++) {
+      var x = R() * (W + 200) - 100;
+      if (Math.abs(x - W / 2) < safe) continue;
+      var far = R() < 0.5;
+      var y = far ? HZ + 14 + R() * 26 : GROUND_Y + 8 + R() * 130;
+      var s = far ? 0.34 + R() * 0.16 : 0.62 + R() * 0.5;
+      cactus(x, y, s, far ? '#7fae62' : '#6fa551', far ? '#5d8a48' : '#4d7b3a');
+    }
+    // A run of fence, not a scatter of posts — four bays at a time, two rails.
+    for (var p = 0; p < 5; p++) {
+      var px = R() * (W + 160) - 80;
+      if (Math.abs(px - W / 2) < safe + 120) continue;
+      var py = HZ + 20 + R() * 26;
+      c.fillStyle = 'rgba(122,78,40,.45)';
+      for (var b = 0; b < 5; b++) c.fillRect(px + b * 30, py - 32, 4.5, 32);
+      c.fillRect(px, py - 26, 124, 3.5);
+      c.fillRect(px, py - 14, 124, 3.5);
+    }
+
+    // Ground shadow pools under each duellist, baked in.
+    for (var d = -1; d <= 1; d += 2) {
+      var gx = W / 2 + d * DUEL_HALF;
+      var gg = c.createRadialGradient(gx, GROUND_Y + 8, 4, gx, GROUND_Y + 8, 92);
+      gg.addColorStop(0, 'rgba(122,70,30,.30)');
+      gg.addColorStop(1, 'rgba(122,70,30,0)');
+      c.fillStyle = gg;
+      c.fillRect(gx - 96, GROUND_Y - 30, 192, 76);
+    }
+
+    bgFull = cv;
+    return cv;
+  }
+
+  /* =========================================================================
+     6. RUN STATE
+     ========================================================================= */
+  var S = {
+    mode: 'menu', resumeMode: 'play', tier: TIERS[1],
+
+    // round machine
+    phase: 'settle', t: 0,
+    waitFor: 0, feintFor: 0, nextTell: 0,
+    isDraw: true, hasFeint: false, feintDraw: false,
+    signalAt: 0, reactMs: 0, lastWasDraw: true,
+    calledYet: false, freezeSpan: 0,
+    window: 0.5,
+
+    // ladder
+    rivalIdx: 0, rival: null, rivalWins: 0, rivalsBeaten: 0,
+
+    // economy
+    plates: 3, maxPlates: 5, platesWon: 0,
+    streak: 0, bestStreak: 0,
+
+    // ledger
+    score: 0, rounds: 0, wins: 0, losses: 0, bestMs: 0, falseStarts: 0,
+
+    // presentation
+    outcome: '', outMsg: '', outSub: '',
+    myFire: -1, rivalFire: -1, stance: 0, rivalTwitch: 0,
+    shake: 0, flash: 0, flashCol: '255,255,255',
+    particles: [], floats: [], tumble: null, bird: null,
+    plateFalls: [], lampPulse: 0, ringSnap: 0,
+    toastT: 0, toastMsg: '', toastSub: '',
+    deathT: 0, time: 0
+  };
+
+  var overTitleText = 'Out of Plates';
+
+  function resetRun() {
+    var T = tierById(Store.data.tier);
+    S.tier = T;
+    S.mode = 'menu';
+    S.rivalIdx = 0;
+    S.rival = rivalAt(0);
+    S.rivalWins = 0;
+    S.rivalsBeaten = 0;
+    S.window = windowFor(T, 0);
+    S.plates = T.plates;
+    S.maxPlates = T.maxPlates;
+    S.platesWon = 0;
+    S.streak = 0; S.bestStreak = 0;
+    S.score = 0; S.rounds = 0; S.wins = 0; S.losses = 0;
+    S.bestMs = 0; S.falseStarts = 0;
+    S.phase = 'settle'; S.t = SETTLE_TIME;
+    S.isDraw = true; S.hasFeint = false; S.reactMs = 0;
+    S.calledYet = false; S.freezeSpan = 0;
+    S.outcome = ''; S.outMsg = ''; S.outSub = '';
+    S.myFire = -1; S.rivalFire = -1; S.stance = 0; S.rivalTwitch = 0;
+    S.shake = 0; S.flash = 0;
+    S.particles.length = 0; S.floats.length = 0; S.plateFalls.length = 0;
+    S.tumble = null; S.bird = null;
+    S.toastT = 0; S.deathT = 0; S.time = 0;
+    S.lampPulse = 0; S.ringSnap = 0;
+  }
+
+  function toast(msg, sub) { S.toastMsg = msg; S.toastSub = sub || ''; S.toastT = 2.1; }
+
+  function floatText(x, y, text, col, size) {
+    S.floats.push({ x: x, y: y, text: text, col: col, size: size || 30, life: 1.15, max: 1.15 });
+  }
+
+  function burst(x, y, col, n, spread, speed) {
+    for (var i = 0; i < n; i++) {
+      var a = rnd(0, Math.PI * 2);
+      var v = rnd(speed * 0.35, speed);
+      S.particles.push({
+        x: x + rnd(-spread, spread), y: y + rnd(-spread, spread),
+        vx: Math.cos(a) * v, vy: Math.sin(a) * v - speed * 0.3,
+        life: rnd(0.35, 0.8), max: 0.8, r: rnd(2.5, 6.5), col: col, g: 640
+      });
+    }
+  }
+
+  /* =========================================================================
+     7. THE ROUND MACHINE
+
+     settle -> wait -> [feint] -> call -> resolve
+
+     Only the `call` phase is real. Everything before it is noise, and the lamp
+     says so: the ring around it is dashed until the call settles, and solid
+     from then on. One rule covers the whole game — act on a solid ring, never
+     on anything else.
+     ========================================================================= */
+  function beginRound() {
+    var T = S.tier;
+    S.phase = 'settle';
+    S.t = SETTLE_TIME;
+    S.isDraw = Math.random() >= T.hold;
+
+    var fc = clamp(S.rival.feint * T.feintMul, 0, 0.9);
+    S.hasFeint = Math.random() < fc;
+    S.feintDraw = !S.isDraw;            // a feint always shows the opposite
+    S.feintFor = rnd(FEINT_MIN, FEINT_MAX);
+
+    S.waitFor = rnd(T.waitMin, T.waitMax);
+    if (S.hasFeint) S.waitFor = Math.max(0.35, S.waitFor - S.feintFor);
+
+    S.nextTell = rnd(0.3, 0.75);
+    S.myFire = -1; S.rivalFire = -1;
+    S.reactMs = 0; S.outcome = '';
+    S.calledYet = false; S.freezeSpan = 0;
+    S.lampPulse = 0; S.ringSnap = 0;
+  }
+
+  function enterCall() {
+    S.phase = 'call';
+    S.t = 0;
+    S.signalAt = now();
+    S.calledYet = true;
+    S.ringSnap = 1;
+    Sound.drone(false);
+    if (S.isDraw) Sound.callDraw(); else Sound.callHold();
+  }
+
+  function now() {
+    return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+  }
+
+  function fireTell() {
+    var r = S.rival, roll = Math.random();
+    if (roll < 0.34) {
+      S.rivalTwitch = 0.26;
+      if (Math.random() < 0.5) Sound.tick();
+    } else if (roll < 0.55) {
+      burst(cx() + DUEL_HALF, GROUND_Y + 2, '#e6be82', 7, 16, 120);
+      Sound.tick();
+    } else if (roll < 0.76) {
+      S.lampPulse = 1;                       // amber flicker: never a call
+      Sound.tick();
+    } else if (roll < 0.9 && !S.tumble) {
+      var dir = Math.random() < 0.5 ? 1 : -1;
+      S.tumble = { x: dir > 0 ? -70 : view.w + 70, y: GROUND_Y - 16, vx: dir * rnd(190, 265), rot: 0, r: rnd(20, 29) };
+    } else if (!S.bird) {
+      var d2 = Math.random() < 0.5 ? 1 : -1;
+      S.bird = { x: d2 > 0 ? -50 : view.w + 50, y: rnd(150, 250), vx: d2 * rnd(150, 210), ph: 0 };
+    }
+    S.nextTell = rnd(0.36, 0.95) / Math.max(0.3, r.twitch + 0.35);
+  }
+
+  /* ------------------------------------------------------------------------
+     Outcomes. Every plate is spent by exactly one lost round and won back only
+     by a clean streak, and the run ends the moment the last one goes — which
+     is the identity the gameplay tests lean on:
+
+         rounds lost  ===  starting plates  +  plates won
+     ------------------------------------------------------------------------ */
+  function roundWon(kind, ms) {
+    S.rounds++; S.wins++; S.streak++;
+    if (S.streak > S.bestStreak) S.bestStreak = S.streak;
+    var T = S.tier, gain;
+
+    if (kind === 'draw') {
+      var margin = clamp(1 - ms / (S.window * 1000), 0, 1);
+      gain = 110 + 420 * margin;
+      S.reactMs = Math.round(ms);
+      S.lastWasDraw = true;
+      if (!S.bestMs || S.reactMs < S.bestMs) S.bestMs = S.reactMs;
+      S.myFire = 0;
+      Sound.bolt(true);
+      S.outMsg = 'HIT';
+      S.outSub = S.reactMs + ' ms  ·  window ' + Math.round(S.window * 1000) + ' ms';
+    } else {
+      gain = 280;
+      S.lastWasDraw = false;
+      Sound.held();
+      S.outMsg = 'HELD';
+      S.outSub = 'red means red';
+    }
+
+    var combo = 1 + 0.1 * Math.min(S.streak - 1, 10);
+    gain = Math.round(gain * combo * T.scoreMul);
+    S.score += gain;
+    S.outcome = 'win';
+    floatText(cx(), GROUND_Y - 250, '+' + fmt(gain), '#2f8a3c', 34);
+    if (S.streak > 1) floatText(cx() + 96, GROUND_Y - 205, 'x' + combo.toFixed(1), '#c9452c', 22);
+    burst(cx() + DUEL_HALF, GROUND_Y - 86, S.rival.col, 16, 22, 330);
+    S.shake = Math.max(S.shake, kind === 'draw' ? 9 : 4);
+
+    // A clean streak bolts a fresh plate on. Capped, and a capped award is not
+    // counted — otherwise the ledger identity would drift.
+    if (S.streak % STREAK_FOR_PLATE === 0 && S.plates < S.maxPlates) {
+      S.plates++; S.platesWon++;
+      Sound.plateWon();
+      floatText(cx() - 150, GROUND_Y - 210, '+PLATE', '#2f8a3c', 26);
+      burst(cx() - DUEL_HALF, GROUND_Y - 96, '#8ce07a', 18, 20, 300);
+    }
+
+    S.rivalWins++;
+    if (S.rivalWins >= WINS_PER_RIVAL) advanceRival();
+
+    S.freezeSpan = kind === 'draw' ? clamp(ms / (S.window * 1000), 0, 1) : 1;
+    S.phase = 'resolve';
+    S.t = RESOLVE_T;
+  }
+
+  function roundLost(msg, sub, cause) {
+    S.rounds++; S.losses++; S.streak = 0;
+    S.plates--;
+    if (cause === 'early') S.falseStarts++;
+    if (cause === 'slow') { S.rivalFire = 0; Sound.bolt(false); }
+    else Sound.falseStart();
+
+    S.outcome = 'loss';
+    S.outMsg = msg;
+    S.outSub = sub || '';
+    S.shake = 15;
+    S.flash = 0.5; S.flashCol = '210,58,44';
+    Sound.drone(false);
+    Sound.plateLost();
+    S.plateFalls.push({ i: S.plates, x: cx() - DUEL_HALF + rnd(-14, 14), y: GROUND_Y - 108, vx: rnd(-90, 90), vy: -190, rot: 0, life: 1.2 });
+    burst(cx() - DUEL_HALF, GROUND_Y - 92, '#ffd9a8', 20, 20, 340);
+
+    S.freezeSpan = S.calledYet
+      ? clamp(S.t / (S.isDraw ? S.window : HOLD_TIME), 0, 1)
+      : 0;
+    S.phase = 'resolve';
+    S.t = RESOLVE_T;
+  }
+
+  function advanceRival() {
+    var T = S.tier;
+    S.rivalsBeaten++;
+    var bonus = Math.round(500 * T.scoreMul);
+    S.score += bonus;
+    Sound.rivalDown();
+    floatText(cx() + DUEL_HALF, GROUND_Y - 190, S.rival.name.toUpperCase() + ' DOWN', '#c9452c', 24);
+    floatText(cx(), GROUND_Y - 300, '+' + fmt(bonus), '#c9452c', 30);
+    burst(cx() + DUEL_HALF, GROUND_Y - 80, S.rival.col, 34, 26, 420);
+    S.rivalIdx++;
+    S.rival = rivalAt(S.rivalIdx);
+    S.rivalWins = 0;
+    S.window = windowFor(T, S.rivalIdx);
+  }
+
+  function gameOver(title) {
+    overTitleText = title || 'Out of Plates';
+    S.mode = 'dead';
+    S.deathT = 1.4;
+    Sound.over();
+  }
+
+  /* =========================================================================
+     8. INPUT — one tap, everywhere, identical on every tier.
+     ========================================================================= */
+  function onTap() {
+    if (S.mode !== 'play') return;
+    Sound.resumeCtx();
+
+    if (S.phase === 'settle') {
+      // The tap that started the round must not become a false start.
+      S.stance = Math.max(S.stance, 0.5);
+      return;
+    }
+    if (S.phase === 'resolve') return;
+
+    if (S.phase === 'wait') {
+      roundLost('TOO EARLY', 'the ring was still dashed', 'early');
+      return;
+    }
+    if (S.phase === 'feint') {
+      roundLost('THE FEINT GOT YOU', 'dashed ring, not the call', 'early');
+      return;
+    }
+    // phase === 'call'
+    if (S.isDraw) {
+      roundWon('draw', now() - S.signalAt);
+    } else {
+      roundLost('THAT WAS RED', 'red means hold', 'early');
+    }
+  }
+
+  app.addEventListener('pointerdown', function (e) {
+    if (e.target && e.target.closest && e.target.closest('#sysbar')) return;
+    e.preventDefault();
+    Sound.boot();
+    onTap();
+  }, { passive: false });
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'Escape' || k === 'p' || k === 'P') {
+      e.preventDefault();
+      if (S.mode === 'play') pauseGame(); else if (S.mode === 'paused') resumeGame();
+      return;
+    }
+    if (k === 'm' || k === 'M') { e.preventDefault(); Sound.boot(); Sound.resumeCtx(); toggleMute(); return; }
+    if (k === ' ' || k === 'Spacebar' || k === 'Enter' || k === 'f' || k === 'F' || k === 'ArrowDown') {
+      if (S.mode !== 'play') return;
+      e.preventDefault();
+      Sound.boot();
+      onTap();
+    }
+  });
+
+  /* =========================================================================
+     9. UPDATE
+     ========================================================================= */
+  function update(dt) {
+    updateFx(dt);
+
+    if (S.mode === 'dead') {
+      S.deathT -= dt;
+      if (S.deathT <= 0 && !gameOverShown) showGameOver();
+      return;
+    }
+    if (S.mode !== 'play') return;
+
+    S.time += dt;
+    S.stance += (1 - S.stance) * Math.min(1, dt * 6);
+
+    switch (S.phase) {
+      case 'settle':
+        S.t -= dt;
+        if (S.t <= 0) {
+          S.phase = 'wait';
+          S.t = S.waitFor;
+          Sound.drone(true);
+        }
+        break;
+
+      case 'wait':
+        S.t -= dt;
+        S.nextTell -= dt;
+        if (S.nextTell <= 0) fireTell();
+        if (S.t <= 0) {
+          if (S.hasFeint) {
+            S.phase = 'feint';
+            S.t = S.feintFor;
+            Sound.feint();
+          } else enterCall();
+        }
+        break;
+
+      case 'feint':
+        S.t -= dt;
+        if (S.t <= 0) enterCall();
+        break;
+
+      case 'call':
+        S.t += dt;
+        if (S.isDraw) {
+          if (S.t >= S.window) {
+            roundLost('TOO SLOW', S.rival.name + ' drew in ' + Math.round(S.window * 1000) + ' ms', 'slow');
+          }
+        } else if (S.t >= HOLD_TIME) {
+          roundWon('hold', 0);
+        }
+        break;
+
+      case 'resolve':
+        S.t -= dt;
+        if (S.t <= 0) {
+          if (S.plates <= 0) gameOver('Out of Plates');
+          else beginRound();
+        }
+        break;
+    }
+  }
+
+  /* Screen effects decay on real time and in every mode, so a run that ends on
+     a red flash does not leave the flash painted on forever. That bug shipped
+     once in this portfolio; it does not ship again. */
+  function updateFx(dt) {
+    S.shake *= Math.pow(0.0016, dt);
+    if (S.shake < 0.05) S.shake = 0;
+    S.flash = Math.max(0, S.flash - dt * 2.1);
+    S.lampPulse = Math.max(0, S.lampPulse - dt * 2.4);
+    S.ringSnap = Math.max(0, S.ringSnap - dt * 3.4);
+    S.rivalTwitch = Math.max(0, S.rivalTwitch - dt);
+    if (S.toastT > 0) S.toastT -= dt;
+    if (S.myFire >= 0 && S.myFire < 1.2) S.myFire += dt * 3.4;
+    if (S.rivalFire >= 0 && S.rivalFire < 1.2) S.rivalFire += dt * 3.4;
+
+    var i;
+    for (i = S.particles.length - 1; i >= 0; i--) {
+      var p = S.particles[i];
+      p.life -= dt;
+      if (p.life <= 0) { S.particles.splice(i, 1); continue; }
+      p.vy += p.g * dt;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+    }
+    for (i = S.floats.length - 1; i >= 0; i--) {
+      var f = S.floats[i];
+      f.life -= dt;
+      if (f.life <= 0) { S.floats.splice(i, 1); continue; }
+      f.y -= 62 * dt;
+    }
+    for (i = S.plateFalls.length - 1; i >= 0; i--) {
+      var pf = S.plateFalls[i];
+      pf.life -= dt;
+      if (pf.life <= 0) { S.plateFalls.splice(i, 1); continue; }
+      pf.vy += 1400 * dt;
+      pf.x += pf.vx * dt; pf.y += pf.vy * dt;
+      pf.rot += dt * 7;
+    }
+    if (S.tumble) {
+      S.tumble.x += S.tumble.vx * dt;
+      S.tumble.rot += (S.tumble.vx / S.tumble.r) * dt;
+      if (S.tumble.x < -120 || S.tumble.x > view.w + 120) S.tumble = null;
+    }
+    if (S.bird) {
+      S.bird.x += S.bird.vx * dt;
+      S.bird.ph += dt * 9;
+      if (S.bird.x < -90 || S.bird.x > view.w + 90) S.bird = null;
+    }
+  }
+
+  /* =========================================================================
+     10. RENDER
+     ========================================================================= */
+  var INK = '#3a2416';
+
+  function render() {
+    // The desert is pre-painted at real canvas resolution and blitted 1:1.
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(backgroundFull(), 0, 0);
+    ctx.restore();
+
+    var sx = 0, sy = 0;
+    if (S.shake > 0.1) { sx = rnd(-S.shake, S.shake); sy = rnd(-S.shake * 0.6, S.shake * 0.6); }
+
+    ctx.save();
+    ctx.translate(sx, sy);
+    drawScenery();
+    drawPost();
+    drawBot(cx() - DUEL_HALF, 1, '#f2f7f9', '#43606d', '#ffd05c', true);
+    drawBot(cx() + DUEL_HALF, -1, S.rival.col, S.rival.dark, S.rival.trim, false);
+    drawBolts();
+    drawLamp();
+    drawParticles();
+    drawPlateFalls();
+    ctx.restore();
+
+    drawHud();
+    drawCallout();
+    drawFloats();
+    drawToast();
+
+    if (S.flash > 0.001) {
+      ctx.fillStyle = 'rgba(' + S.flashCol + ',' + (S.flash * 0.5).toFixed(3) + ')';
+      ctx.fillRect(0, 0, view.w, view.h);
+    }
+  }
+
+  function drawScenery() {
+    if (S.tumble) {
+      var t = S.tumble;
+      var s = sprite('tumble', t.r * 2.4, t.r * 2.4, function (c, w, h) {
+        var r = w / 2.4;
+        c.translate(w / 2, h / 2);
+        c.strokeStyle = '#a8763c'; c.lineWidth = 2.4; c.lineCap = 'round';
+        for (var i = 0; i < 11; i++) {
+          var a = i * 1.7, rr = r * (0.5 + (i % 3) * 0.22);
+          c.beginPath();
+          c.moveTo(Math.cos(a) * rr * 0.2, Math.sin(a) * rr * 0.2);
+          c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+          c.stroke();
+        }
+        c.strokeStyle = 'rgba(140,92,44,.8)'; c.lineWidth = 2;
+        c.beginPath(); c.arc(0, 0, r * 0.62, 0, Math.PI * 2); c.stroke();
+      });
+      ctx.save();
+      ctx.translate(t.x, t.y);
+      ctx.rotate(t.rot);
+      blit(s, 0, 0);
+      ctx.restore();
+    }
+    if (S.bird) {
+      var b = S.bird, flap = Math.sin(b.ph) * 8;
+      ctx.strokeStyle = 'rgba(70,48,30,.6)';
+      ctx.lineWidth = 3; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(b.x - 13, b.y + flap);
+      ctx.quadraticCurveTo(b.x, b.y - 5, b.x + 13, b.y + flap);
+      ctx.stroke();
+    }
+  }
+
+  function drawPost() {
+    var x = cx(), top = LAMP_Y + LAMP_R - 4, bot = GROUND_Y - 6;
+    var s = sprite('post', 74, bot - top, function (c, w, h) {
+      c.fillStyle = '#8a5a2e';
+      roundRect(c, w / 2 - 11, 0, 22, h, 5); c.fill();
+      c.fillStyle = 'rgba(255,236,200,.35)';
+      roundRect(c, w / 2 - 9, 0, 6, h, 3); c.fill();
+      c.fillStyle = 'rgba(80,48,20,.25)';
+      roundRect(c, w / 2 + 4, 0, 7, h, 3); c.fill();
+    });
+    // The cache holds the trunk; the braces are two cheap strokes.
+    blit(s, x, (top + bot) / 2);
+    ctx.strokeStyle = '#6f471f';
+    ctx.lineWidth = 7; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x - 34, bot - 4); ctx.lineTo(x - 4, bot - 74);
+    ctx.moveTo(x + 34, bot - 4); ctx.lineTo(x + 4, bot - 74);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(110,70,32,.35)';
+    roundRect(ctx, x - 40, bot - 8, 80, 12, 6); ctx.fill();
+  }
+
+  /* ------------------------------------------------------------------------
+     The duellists. Body and head are cached per colour; only the arm, the
+     visor light and the chest plates are drawn live, because those are the
+     parts that move. No shadow blur anywhere in the per-frame path.
+     ------------------------------------------------------------------------ */
+  function botSprite(col, dark, trim, dir) {
+    return sprite('bot|' + col + '|' + dark + '|' + trim + '|' + dir, BOT_W, BOT_SPR_H, function (c, w, h) {
+      var mx = w / 2, gy = h - 6;
+      // legs
+      c.fillStyle = dark;
+      roundRect(c, mx - 27, gy - 50, 20, 50, 8); c.fill();
+      roundRect(c, mx + 7, gy - 50, 20, 50, 8); c.fill();
+      c.fillStyle = 'rgba(0,0,0,.16)';
+      roundRect(c, mx - 33, gy - 9, 30, 9, 4); c.fill();
+      roundRect(c, mx + 3, gy - 9, 30, 9, 4); c.fill();
+      // torso
+      c.fillStyle = col;
+      roundRect(c, mx - 45, gy - 138, 90, 92, 20); c.fill();
+      c.fillStyle = dark;
+      roundRect(c, mx - 45, gy - 138, 90, 16, 8); c.fill();
+      // belt
+      c.fillStyle = trim;
+      roundRect(c, mx - 45, gy - 62, 90, 13, 6); c.fill();
+      // shoulder pads
+      c.fillStyle = dark;
+      roundRect(c, mx - 58, gy - 132, 26, 30, 11); c.fill();
+      roundRect(c, mx + 32, gy - 132, 26, 30, 11); c.fill();
+      // head
+      c.fillStyle = col;
+      roundRect(c, mx - 32, gy - 186, 64, 50, 16); c.fill();
+      c.fillStyle = '#2b1c12';
+      roundRect(c, mx - 26 + dir * 3, gy - 175, 52, 22, 10); c.fill();
+      // antenna, canted away from the opponent so the two silhouettes differ
+      c.strokeStyle = dark; c.lineWidth = 5; c.lineCap = 'round';
+      c.beginPath();
+      c.moveTo(mx - dir * 10, gy - 186);
+      c.lineTo(mx - dir * 20, gy - 210);
+      c.stroke();
+      c.fillStyle = trim;
+      c.beginPath(); c.arc(mx - dir * 20, gy - 214, 6, 0, Math.PI * 2); c.fill();
+      // brim, so the head reads even at phone size
+      c.fillStyle = dark;
+      roundRect(c, mx - 38, gy - 192, 76, 10, 5); c.fill();
+    });
+  }
+
+  function drawBot(x, dir, col, dark, trim, isPlayer) {
+    var s = botSprite(col, dark, trim, dir);
+    var lean = isPlayer ? 0 : (S.rivalTwitch > 0 ? Math.sin(S.rivalTwitch * 40) * 3 : 0);
+    var rise = (1 - clamp(S.stance, 0, 1)) * 26;
+    // The sprite's feet land two units below the ground line: its floor row is
+    // at h-6, so the centre goes at GROUND_Y + 2 - (h - 6) + h/2.
+    blit(s, x + lean, GROUND_Y + 8 - BOT_SPR_H / 2 + rise);
+
+    // Visor light: the one part of the rival that reacts, and a deliberate
+    // red herring — it lights on tells as often as it does on the call.
+    var eyeY = GROUND_Y - 162 + rise;
+    var lit = isPlayer ? 0.55 : (S.rivalTwitch > 0 ? 1 : 0.5);
+    ctx.fillStyle = isPlayer ? 'rgba(120,240,255,' + (0.5 + lit * 0.5) + ')' : 'rgba(255,214,120,' + (0.45 + lit * 0.55) + ')';
+    ctx.beginPath(); ctx.arc(x + lean - dir * 11, eyeY, 5.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + lean + dir * 7, eyeY, 5.2, 0, Math.PI * 2); ctx.fill();
+
+    // Arm: hangs at rest, snaps level when the shot goes.
+    var fire = isPlayer ? S.myFire : S.rivalFire;
+    var aim = fire >= 0 ? clamp(fire * 3.2, 0, 1) : 0;
+    var tw = (!isPlayer && S.rivalTwitch > 0) ? 0.22 * (S.rivalTwitch / 0.26) : 0;
+    var a = lerp(1.08, 0.02, aim) - tw;
+    var shX = x + lean + dir * 40, shY = GROUND_Y - 122 + rise;
+    var L = 58;
+    var hx = shX + dir * Math.cos(a) * L, hy = shY + Math.sin(a) * L;
+
+    ctx.strokeStyle = dark; ctx.lineWidth = 17; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(shX, shY); ctx.lineTo(hx, hy); ctx.stroke();
+    ctx.strokeStyle = col; ctx.lineWidth = 9;
+    ctx.beginPath(); ctx.moveTo(shX, shY); ctx.lineTo(hx, hy); ctx.stroke();
+
+    // Emitter coil.
+    ctx.fillStyle = '#2b1c12';
+    ctx.beginPath(); ctx.arc(hx + dir * 5, hy, 13, 0, Math.PI * 2); ctx.fill();
+    var hot = fire >= 0 && fire < 0.7 ? 1 - fire / 0.7 : 0;
+    ctx.fillStyle = isPlayer
+      ? 'rgba(' + Math.round(140 + 115 * hot) + ',' + Math.round(230 + 25 * hot) + ',255,' + (0.55 + 0.45 * hot) + ')'
+      : 'rgba(255,' + Math.round(180 - 60 * hot) + ',' + Math.round(90 + 40 * hot) + ',' + (0.5 + 0.5 * hot) + ')';
+    ctx.beginPath(); ctx.arc(hx + dir * 5, hy, 7 + hot * 4, 0, Math.PI * 2); ctx.fill();
+
+    if (isPlayer) drawChestPlates(x + lean, GROUND_Y - 100 + rise);
+    if (isPlayer) { emitP.x = hx + dir * 14; emitP.y = hy; }
+    else { emitR.x = hx + dir * 14; emitR.y = hy; }
+  }
+
+  var emitP = { x: 0, y: 0 }, emitR = { x: 0, y: 0 };
+
+  function drawChestPlates(x, y) {
+    var n = Math.max(0, S.plates);
+    for (var i = 0; i < S.maxPlates; i++) {
+      var px = x - (S.maxPlates - 1) * 9 + i * 18;
+      ctx.beginPath();
+      ctx.moveTo(px, y - 7); ctx.lineTo(px + 6, y); ctx.lineTo(px, y + 7); ctx.lineTo(px - 6, y);
+      ctx.closePath();
+      if (i < n) { ctx.fillStyle = '#ffd05c'; ctx.fill(); ctx.strokeStyle = '#8a5a1c'; }
+      else { ctx.strokeStyle = 'rgba(60,38,22,.42)'; }
+      ctx.lineWidth = 1.6; ctx.stroke();
+    }
+  }
+
+  function boltPath(fromX, fromY, toX, toY, k, col, glow) {
+    var dx = toX - fromX, dy = toY - fromY;
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ux = dx / len, uy = dy / len;
+    var head = clamp(k * 2.6, 0, 1);
+    var tail = clamp((k - 0.22) * 2.6, 0, 1);
+    var x0 = fromX + ux * len * tail, y0 = fromY + uy * len * tail;
+    var x1 = fromX + ux * len * head, y1 = fromY + uy * len * head;
+    var fade = clamp(1 - (k - 0.55) / 0.5, 0, 1);
+    ctx.globalAlpha = fade;
+    ctx.strokeStyle = glow; ctx.lineWidth = 16; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.strokeStyle = col; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawBolts() {
+    var pX = cx() - DUEL_HALF, rX = cx() + DUEL_HALF;
+    if (S.myFire >= 0 && S.myFire < 1.1) {
+      boltPath(emitP.x, emitP.y, rX - 26, GROUND_Y - 100, S.myFire,
+        '#ffffff', 'rgba(120,235,255,.75)');
+    }
+    if (S.rivalFire >= 0 && S.rivalFire < 1.1) {
+      boltPath(emitR.x, emitR.y, pX + 26, GROUND_Y - 100, S.rivalFire,
+        '#fff3d0', 'rgba(255,150,60,.75)');
+    }
+  }
+
+  /* ------------------------------------------------------------------------
+     The lamp. The ring around it is the whole rulebook: dashed means the call
+     has not settled and nothing you do can be right; solid means it has, and
+     the ring then drains over exactly the time you are being given.
+     ------------------------------------------------------------------------ */
+  function lampState() {
+    if (S.phase === 'call') return S.isDraw ? 'draw' : 'hold';
+    if (S.phase === 'feint') return S.feintDraw ? 'draw' : 'hold';
+    if (S.phase === 'resolve' && S.calledYet) return S.isDraw ? 'draw' : 'hold';
+    return 'wait';
+  }
+
+  function glowSprite(rgb) {
+    var R = LAMP_R * GLOW_MUL;
+    return sprite('glow|' + rgb, R * 2, R * 2, function (c, w, h) {
+      var g = c.createRadialGradient(w / 2, h / 2, LAMP_R * 0.5, w / 2, h / 2, R);
+      g.addColorStop(0, 'rgba(' + rgb + ',.55)');
+      g.addColorStop(0.34, 'rgba(' + rgb + ',.22)');
+      g.addColorStop(1, 'rgba(' + rgb + ',0)');
+      c.fillStyle = g;
+      c.fillRect(0, 0, w, h);
+    });
+  }
+
+  function housingSprite() {
+    return sprite('housing', (LAMP_R + 20) * 2, (LAMP_R + 20) * 2 + 26, function (c, w, h) {
+      var mx = w / 2, my = (LAMP_R + 20) + 22;
+      c.fillStyle = '#5d3c1c';
+      roundRect(c, mx - 26, 0, 52, 34, 10); c.fill();
+      c.fillStyle = '#3f2a14';
+      c.beginPath(); c.arc(mx, my, LAMP_R + 18, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#7a5227';
+      c.beginPath(); c.arc(mx, my, LAMP_R + 11, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#2b1c12';
+      c.beginPath(); c.arc(mx, my, LAMP_R + 3, 0, Math.PI * 2); c.fill();
+      for (var i = 0; i < 8; i++) {
+        var a = i * Math.PI / 4 + Math.PI / 8;
+        c.save();
+        c.translate(mx + Math.cos(a) * (LAMP_R + 14), my + Math.sin(a) * (LAMP_R + 14));
+        c.rotate(a);
+        c.fillStyle = '#cfa25e';
+        roundRect(c, -4, -4, 8, 8, 2); c.fill();
+        c.restore();
+      }
+    });
+  }
+
+  var LENS = {
+    wait: { lens: '#f0a92e', deep: '#c07c15', glyph: '#4a2e0c', rgb: '240,169,46' },
+    draw: { lens: '#ffffff', deep: '#dfe9f2', glyph: '#2b1c12', rgb: '255,255,255' },
+    hold: { lens: '#e03a2c', deep: '#a3200f', glyph: '#fff0ec', rgb: '224,58,44' }
+  };
+
+  function drawLamp() {
+    var x = cx(), y = LAMP_Y;
+    var st = lampState();
+    var P = LENS[st];
+    var solid = (S.phase === 'call' || (S.phase === 'resolve' && S.calledYet));
+    var jitter = (S.phase === 'feint') ? rnd(-1.6, 1.6) : 0;
+
+    // glow (authored at the size it is drawn — never upscaled)
+    var intensity = st === 'wait' ? (0.25 + S.lampPulse * 0.55)
+      : (S.phase === 'feint' ? 0.5 : (0.75 + S.ringSnap * 0.25));
+    ctx.globalAlpha = clamp(intensity, 0, 1);
+    blit(glowSprite(P.rgb), x, y);
+    ctx.globalAlpha = 1;
+
+    blit(housingSprite(), x + jitter, y - 22 + jitter * 0.4);
+
+    // lens
+    var lensR = LAMP_R * (st === 'wait' ? 0.97 : 1) + (solid ? S.ringSnap * 3 : 0);
+    ctx.fillStyle = P.deep;
+    ctx.beginPath(); ctx.arc(x + jitter, y + jitter, lensR, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = P.lens;
+    ctx.beginPath(); ctx.arc(x + jitter, y - 2 + jitter, lensR - 5, 0, Math.PI * 2); ctx.fill();
+
+    // glyph — the shape carries the meaning as well as the colour
+    ctx.fillStyle = P.glyph;
+    if (st === 'draw') {
+      starPath(ctx, x + jitter, y - 2 + jitter, lensR * 0.72, 0.34);
+      ctx.fill();
+    } else if (st === 'hold') {
+      roundRect(ctx, x - lensR * 0.62 + jitter, y - 12 + jitter, lensR * 1.24, 20, 9);
+      ctx.fill();
+    } else {
+      ctx.globalAlpha = 0.5 + S.lampPulse * 0.5;
+      ctx.beginPath(); ctx.arc(x, y - 2, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // the ring
+    var rr = LAMP_R + 30;
+    ctx.lineCap = 'butt';
+    if (solid) {
+      // The ring drains over exactly the time you are being given. On a draw
+      // that is the window; on a hold it is how long red has to be respected.
+      var used = S.phase === 'call'
+        ? clamp(S.t / (S.isDraw ? S.window : HOLD_TIME), 0, 1)
+        : clamp(S.freezeSpan || 0, 0, 1);
+      var span = 1 - used;
+      ctx.strokeStyle = 'rgba(43,28,18,.28)';
+      ctx.lineWidth = 11;
+      ctx.beginPath(); ctx.arc(x, y, rr, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = P.lens;
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.arc(x, y, rr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0.001, span));
+      ctx.stroke();
+      if (S.ringSnap > 0) {
+        ctx.globalAlpha = S.ringSnap * 0.8;
+        ctx.strokeStyle = P.lens;
+        ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.arc(x, y, rr + (1 - S.ringSnap) * 42, 0, Math.PI * 2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+    } else {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((S.time % 6) * 0.5);
+      ctx.setLineDash([17, 15]);
+      ctx.strokeStyle = 'rgba(43,28,18,.30)';
+      ctx.lineWidth = 10;
+      ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = '#fff6e2';
+      ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.arc(0, 0, rr, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+  }
+
+  function drawParticles() {
+    for (var i = 0; i < S.particles.length; i++) {
+      var p = S.particles[i];
+      ctx.globalAlpha = clamp(p.life / p.max, 0, 1);
+      ctx.fillStyle = p.col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawPlateFalls() {
+    for (var i = 0; i < S.plateFalls.length; i++) {
+      var p = S.plateFalls[i];
+      ctx.save();
+      ctx.globalAlpha = clamp(p.life, 0, 1);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.beginPath();
+      ctx.moveTo(0, -9); ctx.lineTo(8, 0); ctx.lineTo(0, 9); ctx.lineTo(-8, 0);
+      ctx.closePath();
+      ctx.fillStyle = '#ffd05c'; ctx.fill();
+      ctx.strokeStyle = '#8a5a1c'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* =========================================================================
+     11. HUD AND TEXT
+     ========================================================================= */
+  var FONT = ' system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+  function label(text, x, y, size, col, align, stroke) {
+    ctx.font = '900 ' + size + 'px' + FONT;
+    ctx.textAlign = align || 'center';
+    ctx.textBaseline = 'middle';
+    if (stroke) {
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = Math.max(3, size * 0.16);
+      ctx.strokeStyle = stroke;
+      ctx.strokeText(text, x, y);
+    }
+    ctx.fillStyle = col;
+    ctx.fillText(text, x, y);
+  }
+
+  function drawHud() {
+    var W = view.w;
+
+    // Plates, top left — filled to what you hold, hollow to the ceiling.
+    for (var i = 0; i < S.maxPlates; i++) {
+      var px = 34 + i * 24, py = 42;
+      ctx.beginPath();
+      ctx.moveTo(px, py - 11); ctx.lineTo(px + 9, py); ctx.lineTo(px, py + 11); ctx.lineTo(px - 9, py);
+      ctx.closePath();
+      if (i < S.plates) {
+        ctx.fillStyle = '#ffd05c'; ctx.fill();
+        ctx.strokeStyle = '#7a4a12'; ctx.lineWidth = 2.4; ctx.stroke();
+      } else {
+        ctx.strokeStyle = 'rgba(58,36,22,.34)'; ctx.lineWidth = 2.4; ctx.stroke();
+      }
+    }
+    label('PLATES', 25, 70, 11, 'rgba(58,36,22,.55)', 'left');
+
+    label(fmt(S.score), W / 2, 50, 44, '#3a2416', 'center', 'rgba(255,246,226,.85)');
+    if (S.streak > 1) {
+      var combo = 1 + 0.1 * Math.min(S.streak - 1, 10);
+      label('x' + combo.toFixed(1) + '   streak ' + S.streak, W / 2, 92, 15, '#a5391f', 'center',
+        'rgba(255,246,226,.8)');
+    }
+
+    // The strip between lamp and duellists: who you are facing, and how long
+    // they will give you. It hangs on the post as a board, because without one
+    // the post runs straight through the middle of the words.
+    if (S.toastT > 0 && S.rounds === 0) {
+      board(W / 2, 448, measure(S.toastMsg, 17), 92);
+      label(S.toastMsg, W / 2, 472, 17, '#4a2e12');
+      if (S.toastSub) label(S.toastSub, W / 2, 502, 13, '#8a5a2e');
+      return;
+    }
+
+    var nm = 'RIVAL ' + (S.rivalIdx + 1) + '  ·  ' + S.rival.name.toUpperCase();
+    var wide = Math.max(measure(nm, 19), 230);
+    board(W / 2, 448, wide, 100);
+    label(nm, W / 2, 470, 19, '#4a2e12');
+
+    var pipW = WINS_PER_RIVAL * 20;
+    for (var k = 0; k < WINS_PER_RIVAL; k++) {
+      var qx = W / 2 - pipW / 2 + 10 + k * 20, qy = 499;
+      ctx.beginPath(); ctx.arc(qx, qy, 6.5, 0, Math.PI * 2);
+      if (k < S.rivalWins) { ctx.fillStyle = S.rival.col; ctx.fill(); }
+      ctx.strokeStyle = 'rgba(74,46,18,.55)'; ctx.lineWidth = 2; ctx.stroke();
+    }
+    label('WINDOW ' + Math.round(S.window * 1000) + ' MS', W / 2, 528, 13, '#8a5a2e');
+  }
+
+  function measure(text, size) {
+    ctx.font = '900 ' + size + 'px' + FONT;
+    return ctx.measureText(text).width + 52;
+  }
+
+  function board(mx, top, w, h) {
+    w = Math.min(w, view.w - 28);
+    var s = sprite('board', w, h, function (c, bw, bh) {
+      c.fillStyle = '#6f471f';
+      roundRect(c, 0, 0, bw, bh, 13); c.fill();
+      c.fillStyle = '#e8c993';
+      roundRect(c, 4, 4, bw - 8, bh - 8, 10); c.fill();
+      c.fillStyle = 'rgba(160,110,50,.28)';
+      roundRect(c, 4, bh - 16, bw - 8, 12, 6); c.fill();
+      c.fillStyle = '#a8763c';
+      for (var i = 0; i < 2; i++) {
+        c.beginPath(); c.arc(14, 14 + i * (bh - 28), 4, 0, Math.PI * 2); c.fill();
+        c.beginPath(); c.arc(bw - 14, 14 + i * (bh - 28), 4, 0, Math.PI * 2); c.fill();
+      }
+    });
+    blit(s, mx, top + h / 2);
+  }
+
+  function drawCallout() {
+    var W = view.w, word = '', sub = '', col = '#3a2416', stroke = 'rgba(255,246,226,.9)';
+
+    if (S.mode === 'play' || S.mode === 'dead') {
+      if (S.phase === 'settle' || S.phase === 'wait' || S.phase === 'feint') {
+        word = 'STEADY'; col = 'rgba(58,36,22,.44)';
+      } else if (S.phase === 'call') {
+        if (S.isDraw) { word = 'DRAW'; col = '#ffffff'; stroke = '#2b1c12'; }
+        else { word = 'HOLD'; col = '#e03a2c'; stroke = '#fff0ec'; }
+      } else if (S.phase === 'resolve') {
+        word = S.outMsg; sub = S.outSub;
+        col = S.outcome === 'win' ? '#2f8a3c' : '#c9452c';
+      }
+    }
+    if (!word) return;
+
+    label(word, W / 2, 842, S.phase === 'call' ? 54 : 40, col, 'center', stroke);
+    if (sub) label(sub, W / 2, 886, 15, '#87602f', 'center', 'rgba(255,246,226,.85)');
+
+    // The reaction readout: your time against the window you were given.
+    if (S.phase === 'resolve' && S.calledYet && S.isDraw) {
+      var bw = Math.min(320, view.w - 80), bx = W / 2 - bw / 2, by = 920;
+      ctx.fillStyle = 'rgba(58,36,22,.18)';
+      roundRect(ctx, bx, by, bw, 12, 6); ctx.fill();
+      var used = clamp(S.freezeSpan || 0, 0, 1);
+      ctx.fillStyle = used >= 1 ? '#c9452c' : '#2f8a3c';
+      roundRect(ctx, bx, by, Math.max(6, bw * used), 12, 6); ctx.fill();
+      ctx.strokeStyle = '#3a2416'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(bx + bw, by - 5); ctx.lineTo(bx + bw, by + 17); ctx.stroke();
+    }
+  }
+
+  function drawFloats() {
+    for (var i = 0; i < S.floats.length; i++) {
+      var f = S.floats[i];
+      ctx.globalAlpha = clamp(f.life / f.max, 0, 1);
+      label(f.text, f.x, f.y, f.size, f.col, 'center', 'rgba(255,246,226,.9)');
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawToast() {
+    if (S.toastT <= 0 || S.rounds === 0) return;
+    ctx.globalAlpha = clamp(S.toastT, 0, 1);
+    label(S.toastMsg, view.w / 2, 782, 16, '#3a2416', 'center', 'rgba(255,246,226,.9)');
+    ctx.globalAlpha = 1;
+  }
+
+  /* =========================================================================
+     12. UI WIRING
+     ========================================================================= */
+  var ovMenu = document.getElementById('ovMenu');
+  var ovOver = document.getElementById('ovOver');
+  var ovPause = document.getElementById('ovPause');
+  var elFinal = document.getElementById('finalScore');
+  var elBest = document.getElementById('bestScore');
+  var elBestLabel = document.getElementById('bestLabel');
+  var elRecord = document.getElementById('newRecord');
+  var elRunStats = document.getElementById('runStats');
+  var elMenuHint = document.getElementById('menuHint');
+  var elOverTitle = document.getElementById('overTitle');
+  var elTierPick = document.getElementById('tierPick');
+  var elSuggest = document.getElementById('suggestBox');
+  var elSuggestMsg = document.getElementById('suggestMsg');
+  var btnSuggest = document.getElementById('btnSuggest');
+  var btnSound = document.getElementById('btnSound');
+  var btnPause = document.getElementById('btnPause');
+
+  var ICON_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a9 9 0 0 1 0 12"/></svg>';
+  var ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6"/><path d="M22 9l-5 6"/></svg>';
+  var ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.4"/><rect x="14" y="5" width="4" height="14" rx="1.4"/></svg>';
+  btnPause.innerHTML = ICON_PAUSE;
+
+  function syncSoundIcon() {
+    btnSound.innerHTML = (Sound.muted || !Platform.audioAllowed) ? ICON_OFF : ICON_ON;
+  }
+  function toggleMute() {
+    Sound.muted = !Sound.muted;
+    Store.data.muted = Sound.muted;
+    Store.save();
+    Sound.applyVolume();
+    syncSoundIcon();
+  }
+  btnSound.addEventListener('click', function (e) {
+    e.stopPropagation(); Sound.boot(); Sound.resumeCtx(); toggleMute();
+  });
+  btnPause.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (S.mode === 'play') pauseGame();
+    else if (S.mode === 'paused') resumeGame();
+  });
+
+  var gameOverShown = false;
+
+  function showOverlay(which) {
+    ovMenu.hidden = which !== 'menu';
+    ovOver.hidden = which !== 'over';
+    ovPause.hidden = which !== 'pause';
+  }
+
+  function buildTierPicker() {
+    elTierPick.innerHTML = '';
+    TIERS.forEach(function (T) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tier';
+      b.setAttribute('role', 'radio');
+      b.id = 'tier-' + T.id;
+      b.dataset.tier = T.id;
+      b.innerHTML = '<span class="tn"></span><span class="tb"></span>';
+      b.querySelector('.tn').textContent = T.name;
+      b.querySelector('.tb').textContent = T.blurb;
+      b.addEventListener('click', function () { setTier(T.id); Sound.boot(); Sound.ui(); });
+      elTierPick.appendChild(b);
+    });
+    syncTierPicker();
+  }
+
+  function syncTierPicker() {
+    var kids = elTierPick.children;
+    for (var i = 0; i < kids.length; i++) {
+      kids[i].setAttribute('aria-checked', kids[i].dataset.tier === Store.data.tier ? 'true' : 'false');
+    }
+    syncMenuHint();
+  }
+
+  function setTier(id) {
+    if (Store.data.tier === id) return;
+    Store.data.tier = id;
+    Store.data.quickDeaths = 0;
+    Store.save();
+    resetRun();
+    syncTierPicker();
+  }
+
+  function syncMenuHint() {
+    var T = tierById(Store.data.tier);
+    var best = Store.best();
+    if (best > 0) {
+      elMenuHint.innerHTML =
+        '<b>' + T.name + '</b> · window ' + T.winBase + '–' + T.winFloor + ' ms · ' + T.plates + ' plates<br>' +
+        'best <b>' + fmt(best) + '</b> · rival <b>' + Store.rival() + '</b>' +
+        (Store.ms() ? ' · fastest <b>' + Store.ms() + ' ms</b>' : '');
+    } else {
+      elMenuHint.innerHTML =
+        '<b>' + T.name + '</b> · ' + T.plates + ' plates · ' + T.winBase + ' ms to answer<br>' +
+        'Only a <b>solid</b> ring is the call. White, tap. Red, don\'t.<br>' +
+        'A dashed ring is a lie, however bright it gets.';
+    }
+  }
+
+  function startRun() {
+    Sound.boot(); Sound.resumeCtx();
+    gameOverShown = false;
+    resetRun();
+    S.mode = 'play';
+    showOverlay(null);
+    Sound.ui();
+    beginRound();
+    toast('WAIT FOR THE SOLID RING', 'white = tap  ·  red = hold  ·  dashed = not yet');
+  }
+
+  function showGameOver() {
+    gameOverShown = true;
+    var T = S.tier;
+    var final = Math.floor(S.score);
+    var isRecord = final > Store.best(T.id);
+    if (isRecord) Store.data.bests[T.id] = final;
+    if (S.rivalIdx + 1 > Store.rival(T.id)) Store.data.bestRival[T.id] = S.rivalIdx + 1;
+    if (S.bestMs && (!Store.ms(T.id) || S.bestMs < Store.ms(T.id))) Store.data.bestMs[T.id] = S.bestMs;
+    Store.data.runs++;
+
+    if (S.rivalsBeaten === 0) Store.data.quickDeaths++;
+    else Store.data.quickDeaths = 0;
+
+    elOverTitle.textContent = overTitleText;
+    elFinal.textContent = fmt(final);
+    elBest.textContent = fmt(Store.best(T.id));
+    elBestLabel.textContent = 'Best · ' + T.name;
+    elRecord.hidden = !isRecord;
+    elRunStats.textContent =
+      'rival ' + (S.rivalIdx + 1) + ' · ' + S.rounds + ' rounds · ' + S.wins + ' won · ' +
+      S.losses + ' lost' +
+      (S.bestMs ? ' · best ' + S.bestMs + 'ms' : '') +
+      ' · ' + S.falseStarts + ' early' +
+      (S.platesWon ? ' · ' + S.platesWon + ' plates won' : '');
+
+    applySuggestion(T);
+    Store.save();
+    showOverlay('over');
+  }
+
+  var suggestTarget = null;
+
+  function applySuggestion(T) {
+    var idx = tierIndex(T.id);
+    suggestTarget = null;
+    if (Store.data.quickDeaths >= 3 && idx > 0 && !Store.data.offeredDown) {
+      suggestTarget = TIERS[idx - 1];
+      elSuggestMsg.textContent =
+        'Three runs without taking a rival down. ' + suggestTarget.name + ' gives you ' +
+        suggestTarget.winBase + ' ms instead of ' + T.winBase + '.';
+      btnSuggest.textContent = 'Switch to ' + suggestTarget.name;
+      Store.data.offeredDown = true;
+    } else if (S.rivalsBeaten >= 3 && idx < TIERS.length - 1 && !Store.data.offeredUp) {
+      suggestTarget = TIERS[idx + 1];
+      elSuggestMsg.textContent =
+        'Three rivals down. ' + suggestTarget.name + ' cuts the window to ' +
+        suggestTarget.winBase + ' ms and pays ' + suggestTarget.scoreMul + '×.';
+      btnSuggest.textContent = 'Try ' + suggestTarget.name;
+      Store.data.offeredUp = true;
+    }
+    elSuggest.hidden = !suggestTarget;
+  }
+
+  btnSuggest.addEventListener('click', function () {
+    if (!suggestTarget) return;
+    setTier(suggestTarget.id);
+    startRun();
+  });
+
+  /* A paused round is a round you could have studied with the lamp lit, so the
+     round restarts on resume. Nothing is taken away for pausing — the rival,
+     the score and the plates are all exactly where they were. */
+  function pauseGame() {
+    if (S.mode !== 'play') return;
+    S.resumeMode = 'play';
+    S.mode = 'paused';
+    Sound.drone(false);
+    Sound.hardStop();
+    showOverlay('pause');
+  }
+
+  function resumeGame() {
+    if (S.mode !== 'paused') return;
+    Sound.resumeCtx();
+    Sound.applyVolume();
+    S.mode = 'play';
+    var live = S.phase === 'wait' || S.phase === 'feint' || S.phase === 'call';
+    if (live) { beginRound(); toast('ROUND RESTARTED', 'nothing lost'); }
+    last = now();
+    showOverlay(null);
+  }
+
+  function toMenu() {
+    S.mode = 'menu';
+    resetRun();
+    syncTierPicker();
+    Sound.drone(false);
+    showOverlay('menu');
+  }
+
+  document.getElementById('btnPlay').addEventListener('click', startRun);
+  document.getElementById('btnAgain').addEventListener('click', startRun);
+  document.getElementById('btnMenu').addEventListener('click', toMenu);
+  document.getElementById('btnResume').addEventListener('click', resumeGame);
+  document.getElementById('btnQuit').addEventListener('click', function () {
+    if (gameOverShown) return;
+    S.mode = 'dead'; S.deathT = 0;
+    overTitleText = 'Walked Away';
+    Sound.drone(false);
+    showGameOver();
+  });
+
+  /* =========================================================================
+     13. PLATFORM PAUSE / VISIBILITY
+     ========================================================================= */
+  var hardPaused = false;
+
+  function platformPause() {
+    hardPaused = true;
+    Sound.hardStop();
+    if (S.mode === 'play') pauseGame();
+    if (raf) { cancelAnimationFrame(raf); raf = 0; }
+  }
+  function platformResume() {
+    hardPaused = false;
+    Sound.resumeCtx();
+    Sound.applyVolume();
+    last = now();
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+
+  Platform.init(platformPause, platformResume, function () {
+    Sound.applyVolume();
+    syncSoundIcon();
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) platformPause(); else platformResume();
+  });
+  window.addEventListener('blur', function () {
+    if (S.mode === 'play') pauseGame();
+  });
+
+  /* =========================================================================
+     14. MAIN LOOP
+     ========================================================================= */
+  var last = 0, raf = 0, painted = false;
+
+  function frame(t) {
+    raf = requestAnimationFrame(frame);
+    if (hardPaused) return;
+    var dt = (t - last) / 1000;
+    last = t;
+    if (!isFinite(dt) || dt < 0) dt = 0;
+    dt = Math.min(dt, 0.05);
+    if (S.mode === 'paused') return;   // no rendering at all while paused
+    update(dt);
+    render();
+    if (!painted) { painted = true; Platform.firstFrame(); Platform.ready(); }
+  }
+
+  /* =========================================================================
+     15. BOOT
+     ========================================================================= */
+  function boot() {
+    layout();
+    Sound.muted = !!Store.data.muted;
+    syncSoundIcon();
+    buildTierPicker();
+    resetRun();
+    elBest.textContent = fmt(Store.best());
+    showOverlay('menu');
+    last = now();
+    raf = requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', layout);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', layout);
+  window.addEventListener('orientationchange', function () { setTimeout(layout, 120); });
+
+  Store.load(boot);
+})();
+</script>
+</body>
+</html>
